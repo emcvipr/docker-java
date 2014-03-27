@@ -4,11 +4,15 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Arrays;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+
 /**
  *
  * @author Konstantin Pelykh (kpelykh@gmail.com)
  *
  */
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HostConfig {
 
     @JsonProperty("Binds")
