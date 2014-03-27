@@ -1,14 +1,15 @@
 package com.kpelykh.docker.client.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
-
 import java.util.Arrays;
-
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 /**
  *
  * @author Konstantin Pelykh (kpelykh@gmail.com)
  *
  */
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HostConfig {
 
     @JsonProperty("Binds")
@@ -44,10 +45,6 @@ public class HostConfig {
 
     public void setBinds(String[] binds) {
         this.binds = binds;
-    }
-    
-    public void setBinds(final BoundHostVolumes volumes) {
-        setBinds(volumes.asBinds());
     }
 
     public String getContainerIDFile() {
