@@ -4,7 +4,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Arrays;
 
-//import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 /**
  *
@@ -12,7 +12,7 @@ import java.util.Arrays;
  *
  */
 
-//@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HostConfig {
 
     @JsonProperty("Binds")
@@ -23,9 +23,7 @@ public class HostConfig {
 
     @JsonProperty("LxcConf")
     private LxcConf[] lxcConf;
-    
-    @JsonProperty("UseHostNetworkStack")
-    private String useHostNetworkStack;
+
 
     @JsonProperty("Links")
     private String[] links;
@@ -52,9 +50,9 @@ public class HostConfig {
         this.binds = binds;
     }
     
-    /*public void setBinds(final BoundHostVolumes volumes) {
+    public void setBinds(final BoundHostVolumes volumes) {
         setBinds(volumes.asBinds());
-    }*/
+    }
 
     public String getContainerIDFile() {
         return containerIDFile;
@@ -87,14 +85,6 @@ public class HostConfig {
     public void setPortBindings(Ports portBindings) {
         this.portBindings = portBindings;
     }
-    
-    public String getUseHostNetworkStack() {
-    	return useHostNetworkStack;
-    }
-    
-    public void setUseHostNetworkStack(String useHostNetworkStack) {
-    	this.useHostNetworkStack = useHostNetworkStack;
-    }
 
     public boolean isPrivileged() {
         return privileged;
@@ -113,18 +103,6 @@ public class HostConfig {
     }
 
     @Override
-   /* public String toString() {
-        return "HostConfig{" +
-                "binds=" + Arrays.toString(binds) +
-                ", containerIDFile='" + containerIDFile + '\'' +
-                ", lxcConf=" + Arrays.toString(lxcConf) +
-                ", links=" + Arrays.toString(links) +
-                ", portBindings=" + portBindings +
-                ", privileged=" + privileged +
-                ", publishAllPorts=" + publishAllPorts +
-                '}';
-    } */
-    
     public String toString() {
         return "HostConfig{" +
                 "binds=" + Arrays.toString(binds) +
@@ -133,7 +111,6 @@ public class HostConfig {
                 ", links=" + Arrays.toString(links) +
                 ", portBindings=" + portBindings +
                 ", privileged=" + privileged +
-                ", useHostNetworkStack=" + useHostNetworkStack +
                 ", publishAllPorts=" + publishAllPorts +
                 '}';
     }
@@ -160,8 +137,7 @@ public class HostConfig {
         public LxcConf setKey(String key) {
             this.key = key;
             return this;
-        }      
-        
+        }
 
         public String getValue() {
             return value;

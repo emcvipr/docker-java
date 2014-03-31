@@ -35,7 +35,6 @@ public class ContainerConfig {
     @JsonProperty("Privileged")   private boolean privileged = false;
     @JsonProperty("WorkingDir")   private String workingDir = "";
     @JsonProperty("Domainname")   private String domainName = "";
-    @JsonProperty("UseHostNetworkStack")   private String useHostNetworkStack = "";
     // FIXME Is this the right type? -BJE
     @JsonProperty("ExposedPorts")   private Map<String, ?> exposedPorts;
     @JsonProperty("OnBuild")          private String[]  onBuild;
@@ -216,15 +215,6 @@ public class ContainerConfig {
         this.image = image;
         return this;
     }
-    
-    public String getUseHostNetworkStack() {
-        return useHostNetworkStack;
-    }
-
-    public ContainerConfig setUseHostNetworkStack(String useHostNetworkStack) {
-        this.useHostNetworkStack = useHostNetworkStack;
-        return this;
-    }
 
     public BoundHostVolumes getVolumes() {
         return volumes;
@@ -287,7 +277,6 @@ public class ContainerConfig {
                 ", privileged=" + privileged +
                 ", workingDir='" + workingDir + '\'' +
                 ", domainName='" + domainName + '\'' +
-                ", useHostNetworkStack='" + useHostNetworkStack + '\'' +
                 '}';
     }
 }
