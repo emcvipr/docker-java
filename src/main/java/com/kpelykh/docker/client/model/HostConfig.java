@@ -4,7 +4,6 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Arrays;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 /**
  *
@@ -12,7 +11,7 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
  *
  */
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+
 public class HostConfig {
 
     @JsonProperty("Binds")
@@ -36,6 +35,9 @@ public class HostConfig {
 
     @JsonProperty("PublishAllPorts")
     private boolean publishAllPorts;
+    
+    @JsonProperty("UseHostNetworkStack")
+    private String useHostNetworkStack;
 
     public HostConfig() {
         this.binds = null;
@@ -50,9 +52,9 @@ public class HostConfig {
         this.binds = binds;
     }
     
-    public void setBinds(final BoundHostVolumes volumes) {
+   /* public void setBinds(final BoundHostVolumes volumes) {
         setBinds(volumes.asBinds());
-    }
+    }*/
 
     public String getContainerIDFile() {
         return containerIDFile;
@@ -102,7 +104,7 @@ public class HostConfig {
         this.publishAllPorts = publishAllPorts;
     }
 
-    @Override
+    @Override    
     public String toString() {
         return "HostConfig{" +
                 "binds=" + Arrays.toString(binds) +
@@ -111,6 +113,7 @@ public class HostConfig {
                 ", links=" + Arrays.toString(links) +
                 ", portBindings=" + portBindings +
                 ", privileged=" + privileged +
+                ", useHostNetworkStack=" + useHostNetworkStack +
                 ", publishAllPorts=" + publishAllPorts +
                 '}';
     }
