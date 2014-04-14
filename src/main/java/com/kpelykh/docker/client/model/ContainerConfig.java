@@ -1,8 +1,25 @@
 package com.kpelykh.docker.client.model;
 
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.map.DeserializationContext;
+import org.codehaus.jackson.map.JsonDeserializer;
+import org.codehaus.jackson.map.TypeDeserializer;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.codehaus.jackson.map.deser.std.MapDeserializer;
+import org.codehaus.jackson.map.deser.std.StdDeserializer;
+import org.codehaus.jackson.map.deser.std.StdKeyDeserializers;
+import org.codehaus.jackson.map.deser.std.StdValueInstantiator;
+import org.codehaus.jackson.map.deser.std.StringDeserializer;
+import org.codehaus.jackson.map.ser.std.MapSerializer;
+import org.codehaus.jackson.map.type.TypeFactory;
+import org.codehaus.jackson.type.JavaType;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,6 +45,7 @@ public class ContainerConfig {
     @JsonProperty("Cmd")          private String[]  cmd;
     @JsonProperty("Dns")          private String[]  dns;
     @JsonProperty("Image")        private String    image;
+    @JsonDeserialize(using=VolumesSerializer.class)
     @JsonProperty("Volumes")      private BoundHostVolumes   volumes;
     @JsonProperty("VolumesFrom")  private String    volumesFrom = "";
     @JsonProperty("Entrypoint")   private String[]  entrypoint = new String[]{};
@@ -278,5 +296,24 @@ public class ContainerConfig {
                 ", workingDir='" + workingDir + '\'' +
                 ", domainName='" + domainName + '\'' +
                 '}';
+    }
+    
+    public static class VolumesSerializer extends JsonDeserializer<BoundHostVolumes> {
+
+        @Override
+        public BoundHostVolumes deserialize(JsonParser jp,
+                DeserializationContext ctxt) throws IOException,
+                JsonProcessingException {
+            JavaType mapType = ctxt.getTypeFactory().constructMapType(HashMap.class, String.class, Object.class);
+            
+            JsonDeserializer<Object> deserializer = 
+                    ctxt.getDeserializerProvider().findTypedValueDeserializer(ctxt.getConfig(), mapType, null);
+            
+            Map<String, Object> map = (Map<String, Object>) deserializer.deserialize(jp, ctxt);
+
+            // TODO construct BoundHostVolumes
+            return null;
+        }
+    
     }
 }

@@ -1,6 +1,7 @@
 package com.kpelykh.docker.client.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.Arrays;
 
@@ -42,10 +43,12 @@ public class HostConfig {
         return binds;
     }
 
+    @JsonIgnore
     public void setBinds(String[] binds) {
         this.binds = binds;
     }
     
+    @JsonIgnore
     public void setBinds(final BoundHostVolumes volumes) {
         setBinds(volumes.asBinds());
     }

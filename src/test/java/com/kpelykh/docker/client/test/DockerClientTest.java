@@ -3,8 +3,8 @@ package com.kpelykh.docker.client.test;
 import com.kpelykh.docker.client.DockerClient;
 import com.kpelykh.docker.client.DockerException;
 import com.kpelykh.docker.client.model.*;
-
 import com.sun.jersey.api.client.ClientResponse;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang.StringUtils;
@@ -20,13 +20,13 @@ import java.lang.reflect.Method;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static ch.lambdaj.Lambda.filter;
 import static ch.lambdaj.Lambda.selectUnique;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.hasItem;
 import static org.testinfected.hamcrest.jpa.HasFieldWithValue.hasField;
 
 /**
@@ -218,12 +218,17 @@ public class DockerClientTest extends Assert
         containerConfig.setImage("busybox");
         containerConfig.setCmd(new String[]{"true"});
 
+        BoundHostVolumes vols = new BoundHostVolumes(Arrays.asList(new String[] {"/tmp:/tmp"}));
+        containerConfig.setVolumes(vols);
+        
         ContainerCreateResponse container = dockerClient.createContainer(containerConfig);
         LOG.info("Created container {}", container.toString());
         assertThat(container.getId(), not(isEmptyString()));
         boolean add = tmpContainers.add(container.getId());
 
-        dockerClient.startContainer(container.getId());
+        HostConfig hostConfig = new HostConfig();
+        hostConfig.setBinds(vols);
+        dockerClient.startContainer(container.getId(), hostConfig);
 
         ContainerInspectResponse containerInspectResponse = dockerClient.inspectContainer(container.getId());
         LOG.info("Container Inspect: {}", containerInspectResponse.toString());
@@ -242,6 +247,7 @@ public class DockerClientTest extends Assert
             assertThat(containerInspectResponse.getState().exitCode, is(equalTo(0)));
         }
 
+        assertThat(containerInspectResponse.getVolumes(), hasKey("/tmp"));
     }
 
     @Test
