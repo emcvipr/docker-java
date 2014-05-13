@@ -108,7 +108,27 @@ public class DockerClient
         }
     }
 
+    public ClientResponse events(Long since, Long until) throws DockerException {
 
+
+        MultivaluedMap<String,String> params = new MultivaluedMapImpl();
+        if(since != null) params.add("since", since.toString());
+        if(until != null) params.add("until", until.toString());
+
+        WebResource webResource = client.resource(restEndpointUrl + "/events").queryParams(params);
+
+        try {
+            LOGGER.trace("POST: {}", webResource);
+            return webResource.accept(MediaType.APPLICATION_OCTET_STREAM_TYPE).post(ClientResponse.class);
+        } catch (UniformInterfaceException exception) {
+            if (exception.getResponse().getStatus() == 500) {
+                throw new DockerException("Server error.", exception);
+            } else {
+                throw new DockerException(exception);
+            }
+        }
+    }
+    
     /**
      ** IMAGE API
      **
