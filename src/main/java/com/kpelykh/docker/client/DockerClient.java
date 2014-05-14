@@ -108,18 +108,17 @@ public class DockerClient
         }
     }
 
-    public ClientResponse events(Long since, Long until) throws DockerException {
-
-
-        MultivaluedMap<String,String> params = new MultivaluedMapImpl();
-        if(since != null) params.add("since", since.toString());
-        if(until != null) params.add("until", until.toString());
-
-        WebResource webResource = client.resource(restEndpointUrl + "/events").queryParams(params);
+    public ClientResponse events(long timeSince) throws DockerException
+    {
+    	String requestUri = "/events";
+    	if(timeSince > 0){
+    		requestUri = requestUri + "?since=" + timeSince;
+    	}
+        WebResource webResource = client.resource(restEndpointUrl + requestUri);
 
         try {
-            LOGGER.trace("POST: {}", webResource);
-            return webResource.accept(MediaType.APPLICATION_OCTET_STREAM_TYPE).post(ClientResponse.class);
+            LOGGER.trace("GET: {}", webResource);
+            return webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
         } catch (UniformInterfaceException exception) {
             if (exception.getResponse().getStatus() == 500) {
                 throw new DockerException("Server error.", exception);
