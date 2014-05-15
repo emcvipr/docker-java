@@ -54,7 +54,7 @@ public class Event
 	
     @Override
     public String toString() {
-        return "Events{" +
+        return "Event{" +
                 "status='" + status + '\'' +
                 ", id='" + id + '\'' +
                 ", from='" + from + '\'' +
