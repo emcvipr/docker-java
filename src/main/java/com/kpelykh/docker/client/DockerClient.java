@@ -13,14 +13,27 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import com.sun.jersey.client.apache4.ApacheHttpClient4Handler;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.impl.DefaultConnectionReuseStrategy;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
+import org.codehaus.jackson.map.DeserializationConfig;
+import org.codehaus.jackson.map.MappingIterator;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectReader;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
@@ -28,9 +41,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,6 +62,7 @@ public class DockerClient
     private static final Logger LOGGER = LoggerFactory.getLogger(DockerClient.class);
 
     private static DockerClient instance;
+    private DefaultHttpClient httpClient;
     private Client client;
     private String restEndpointUrl;
 
@@ -61,17 +79,27 @@ public class DockerClient
         cm.setMaxTotal(1000);
         // Increase default max connection per route
         cm.setDefaultMaxPerRoute(1000);
-
-        HttpClient httpClient = new DefaultHttpClient(cm);
+        
+        httpClient = new DefaultHttpClient(cm);
+        httpClient.setReuseStrategy(new ConnReuse());
         client = new ApacheHttpClient4(new ApacheHttpClient4Handler(httpClient, null, false), clientConfig);
 
         //Experimental support for unix sockets:
         //client = new UnixSocketClient(clientConfig);
 
         client.addFilter(new JsonClientFilter());        
-        client.addFilter(new LoggingFilter());
+        //client.addFilter(new LoggingFilter());
     }
 
+    class ConnReuse extends DefaultConnectionReuseStrategy {
+    	@Override
+        public boolean keepAlive(final HttpResponse response,
+                final HttpContext context) {
+    		// must be false for 'events' API
+    		return false;
+        }
+    }
+    
     /**
      ** MISC API
      **
@@ -108,24 +136,75 @@ public class DockerClient
         }
     }
 
-    public ClientResponse events(long timeSince) throws DockerException
+    public EventIterator events(long timeSince) throws DockerException
     {
     	String requestUri = "/events";
     	if(timeSince > 0){
     		requestUri = requestUri + "?since=" + timeSince;
     	}
-        WebResource webResource = client.resource(restEndpointUrl + requestUri);
+    	
+    	try {
+	    	LOGGER.trace("GET: {}", requestUri);
+	    	HttpUriRequest request = new HttpGet(restEndpointUrl + requestUri);
+	    	request.setHeader("Accept", MediaType.APPLICATION_JSON);
+	    	HttpResponse response = httpClient.execute(request);
+	    	
+	    	if(response.getStatusLine().getStatusCode() != 200) {
+	    		throw new DockerException(String.format("Unexpected response: %d", response.getStatusLine().getStatusCode()));
+	    	}
+	    	
+	    	HttpEntity entity = response.getEntity();
+	    	try {
+	    		EventIterator iterator = new EventIterator(entity);
+	    		return iterator;
+	    	}
+	    	catch(Exception e) {
+	    		EntityUtils.consume(entity);
+	    		throw e;
+	    	}
+    	}
+    	catch(Exception e) {
+    		throw new DockerException(e);
+    	}
+    }
+    
+    public static class EventIterator implements Iterator<Message>, Closeable {
+    	
+    	private static ObjectReader messageReader;
+    	static {
+    		ObjectMapper mapper = new ObjectMapper();
+            mapper.disable(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES);
+            messageReader = mapper.reader(Message.class);
+    	}
+    	
+    	HttpEntity entity;
+    	InputStreamReader data;
+    	MappingIterator<Message> iterator;
+    	
+    	EventIterator(HttpEntity entity) throws IOException {
+    		this.entity = entity;
+        	this.data = new InputStreamReader(this.entity.getContent(), "UTF-8");
+    		this.iterator = messageReader.readValues(data);
+    	}
+    	
+		@Override
+		public boolean hasNext() {
+			return this.iterator.hasNext();
+		}
 
-        try {
-            LOGGER.trace("GET: {}", webResource);
-            return webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
-        } catch (UniformInterfaceException exception) {
-            if (exception.getResponse().getStatus() == 500) {
-                throw new DockerException("Server error.", exception);
-            } else {
-                throw new DockerException(exception);
-            }
-        }
+		@Override
+		public Message next() {
+			return this.iterator.next();
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+		
+    	public void close() throws IOException {
+    		EntityUtils.consume(entity);
+    	}
     }
     
     /**

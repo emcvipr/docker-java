@@ -1,6 +1,7 @@
 package com.kpelykh.docker.client.test;
 
 import com.kpelykh.docker.client.DockerClient;
+import com.kpelykh.docker.client.DockerClient.EventIterator;
 import com.kpelykh.docker.client.DockerException;
 import com.kpelykh.docker.client.model.*;
 import com.sun.jersey.api.client.ClientResponse;
@@ -8,6 +9,13 @@ import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.map.DeserializationConfig;
+import org.codehaus.jackson.map.MappingIterator;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectReader;
 import org.hamcrest.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +30,9 @@ import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static ch.lambdaj.Lambda.filter;
 import static ch.lambdaj.Lambda.selectUnique;
@@ -569,6 +580,65 @@ public class DockerClientTest extends Assert
      * ################
      */
 
+	class EventMonitor implements Runnable {
+		
+		EventIterator iterator;
+		CountDownLatch latch;
+		private String finalStatus;
+		public EventMonitor(EventIterator iterator, CountDownLatch latch, String finalStatus) {
+			this.iterator = iterator;
+			this.latch = latch;
+			this.finalStatus = finalStatus;
+		}
+		
+		public void run(){
+	   		try {
+	   			while(iterator.hasNext()) {
+					Message msg = (Message) iterator.next();
+					if(msg != null) {
+						LOG.info("Received message: {} {}", msg.status, msg.id);
+						if(msg.status.equals(finalStatus)) {
+							latch.countDown();
+							return;
+						}
+					}
+	   			}
+	   		}
+			catch(Exception e) {
+				LOG.error("event monitor failed", e);
+			}
+ 	   }
+	}
+    @Test void testEvents() throws Exception {
+    	
+    	final CountDownLatch latch = new CountDownLatch(1);
+    	
+    	EventIterator iterator = dockerClient.events(0);
+    	try {
+	        Thread t = new Thread(new EventMonitor(iterator, latch, "create"));
+	        t.start();
+	        
+	        ContainerConfig containerConfig = new ContainerConfig();
+	        containerConfig.setImage("busybox");
+	        containerConfig.setCmd(new String[] {"touch", "/test"});
+	
+	        LOG.info("Creating container");
+	        ContainerCreateResponse container = dockerClient.createContainer(containerConfig);
+	        LOG.info("Created container: {}", container.toString());
+	        assertThat(container.getId(), not(isEmptyString()));
+	        tmpContainers.add(container.getId());
+	        
+	        LOG.info("Waiting for 'created' event");
+	        Assert.assertTrue(latch.await(10*60, TimeUnit.SECONDS), "created event failed to arrive");
+	        dockerClient.removeContainer(container.getId());
+	
+	        tmpContainers.remove(container.getId());
+    	}
+    	finally {
+    		iterator.close();
+    	}
+    }
+    
     @Test
     public void testRunShlex() throws DockerException {
 

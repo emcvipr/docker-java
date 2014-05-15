@@ -40,7 +40,7 @@
     </developers>
 
     <properties>
-        <skipTests>true</skipTests>
+        <skipTests>false</skipTests>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.debug>true</jdk.debug>
@@ -50,7 +50,7 @@
 
         <version.slf4j>1.6.1</version.slf4j>
 
-        <jersey.version>1.18</jersey.version>
+        <jersey.version>1.12</jersey.version>
         <jersey-apache-client4.version>1.9</jersey-apache-client4.version>
 
         <httpclient.version>4.2.5</httpclient.version>
