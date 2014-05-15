@@ -168,18 +168,18 @@ public class DockerClient
     	}
     }
     
-    public static class EventIterator implements Iterator<Message>, Closeable {
+    public static class EventIterator implements Iterator<Event>, Closeable {
     	
     	private static ObjectReader messageReader;
     	static {
     		ObjectMapper mapper = new ObjectMapper();
             mapper.disable(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES);
-            messageReader = mapper.reader(Message.class);
+            messageReader = mapper.reader(Event.class);
     	}
     	
     	HttpEntity entity;
     	InputStreamReader data;
-    	MappingIterator<Message> iterator;
+    	MappingIterator<Event> iterator;
     	
     	EventIterator(HttpEntity entity) throws IOException {
     		this.entity = entity;
@@ -193,7 +193,7 @@ public class DockerClient
 		}
 
 		@Override
-		public Message next() {
+		public Event next() {
 			return this.iterator.next();
 		}
 

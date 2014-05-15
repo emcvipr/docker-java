@@ -4,7 +4,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
-public class Events 
+public class Event 
 {
 	@JsonProperty("status")
 	private String status = null;

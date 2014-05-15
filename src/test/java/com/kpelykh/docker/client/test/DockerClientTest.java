@@ -594,10 +594,10 @@ public class DockerClientTest extends Assert
 		public void run(){
 	   		try {
 	   			while(iterator.hasNext()) {
-					Message msg = (Message) iterator.next();
+	   				Event msg = (Event) iterator.next();
 					if(msg != null) {
-						LOG.info("Received message: {} {}", msg.status, msg.id);
-						if(msg.status.equals(finalStatus)) {
+						LOG.info("Received message: {} {}", msg.getStatus(), msg.getId());
+						if(msg.getStatus().equals(finalStatus)) {
 							latch.countDown();
 							return;
 						}
