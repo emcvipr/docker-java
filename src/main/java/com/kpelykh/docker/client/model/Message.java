@@ -3,7 +3,7 @@ package com.kpelykh.docker.client.model;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-@JsonIgnoreProperties
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Message {
 	@JsonProperty
 	public String stream;

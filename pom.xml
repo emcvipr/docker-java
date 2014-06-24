@@ -10,7 +10,7 @@
     <groupId>com.kpelykh</groupId>
     <artifactId>docker-java</artifactId>
     <packaging>jar</packaging>
-    <version>0.8.5-EMCVIPR</version>
+    <version>0.11.1-EMCVIPR</version>
 
     <name>docker-java</name>
     <url>https://github.com/kpelykh/docker-java</url>
