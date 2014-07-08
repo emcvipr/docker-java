@@ -2,6 +2,7 @@ package com.kpelykh.docker.client.model;
 
 
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.Map;
  * @author Konstantin Pelykh (kpelykh@gmail.com)
  *
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ContainerInspectResponse {
 
     @JsonProperty("ID")
@@ -200,6 +202,7 @@ public class ContainerInspectResponse {
         this.hostConfig = hostConfig;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public class NetworkSettings {
 
         @JsonProperty("IPAddress") public String ipAddress;
@@ -222,6 +225,7 @@ public class ContainerInspectResponse {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public class ContainerState {
 
         @JsonProperty("Running") public boolean running;

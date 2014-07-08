@@ -1,11 +1,13 @@
 package com.kpelykh.docker.client.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 /**
  * Configuration object for copy command.
  * @author Victor Lyuboslavsky
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CopyConfig {
 
     @JsonProperty("HostPath")

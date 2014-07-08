@@ -2,6 +2,7 @@ package com.kpelykh.docker.client.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import java.util.Arrays;
 
@@ -10,6 +11,7 @@ import java.util.Arrays;
  * @author Konstantin Pelykh (kpelykh@gmail.com)
  *
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HostConfig {
 
     @JsonProperty("Binds")
@@ -34,8 +36,8 @@ public class HostConfig {
     @JsonProperty("PublishAllPorts")
     private boolean publishAllPorts;
 
-    @JsonProperty("UseHostNetworkStack")
-    private boolean useHostNetworkStack;
+    @JsonProperty("NetworkMode")
+    private String networkMode;
 
     public HostConfig() {
         this.binds = null;
@@ -104,12 +106,12 @@ public class HostConfig {
         this.publishAllPorts = publishAllPorts;
     }
 
-    public boolean isUseHostNetworkStack() {
-        return useHostNetworkStack;
+    public String getNetworkMode() {
+        return networkMode;
     }
     
-    public void setUseHostNetworkStack(boolean useHostNetworkStack) {
-        this.useHostNetworkStack = useHostNetworkStack;
+    public void setNetworkMode(String networkMode) {
+        this.networkMode = networkMode;
     }
     
     @Override
@@ -122,10 +124,11 @@ public class HostConfig {
                 ", portBindings=" + portBindings +
                 ", privileged=" + privileged +
                 ", publishAllPorts=" + publishAllPorts +
-                ", useHostNetworkStack=" + useHostNetworkStack +
+                ", networkMode=" + networkMode +
                 '}';
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public class LxcConf {
         @JsonProperty("Key")
         public String key;
