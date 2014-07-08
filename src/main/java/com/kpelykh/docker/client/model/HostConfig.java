@@ -128,6 +128,7 @@ public class HostConfig {
                 '}';
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public class LxcConf {
         @JsonProperty("Key")
         public String key;
